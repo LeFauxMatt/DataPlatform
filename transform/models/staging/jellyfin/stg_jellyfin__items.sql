@@ -1,3 +1,4 @@
+-- Jellyfin returns its collections (BoxSet) despite IncludeItemTypes=Movie,Series,Episode; they aren't titles.
 select
     id as item_id,
     lower(type) as item_type,
@@ -12,3 +13,4 @@ select
     provider_ids ->> '$.Imdb' as imdb_id,
     cast(date_created as timestamptz) as added_at
 from {{ source('jellyfin', 'items') }}
+where lower(type) in ('movie', 'series', 'episode')
