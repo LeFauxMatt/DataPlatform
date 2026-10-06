@@ -1,0 +1,12 @@
+version: 2
+
+seeds:
+  - name: trakt_statuses
+    description: The request app's numeric request and media statuses.
+    config:
+      column_types:
+        status_code: integer
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [status_kind, status_code]

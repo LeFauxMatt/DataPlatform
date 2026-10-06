@@ -1,0 +1,12 @@
+# Data never goes in git: the repo is mirrored publicly.
+data/
+*.duckdb
+*.duckdb.wal
+.dlt/secrets.toml
+.env
+
+transform/target/
+transform/dbt_packages/
+transform/logs/
+.venv/
+__pycache__/

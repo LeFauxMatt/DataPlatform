@@ -1,0 +1,61 @@
+version: 2
+
+models:
+  - name: dim_titles
+    description: Every movie and series across the library apps and Jellyfin, keyed by media type and TMDB id.
+    columns:
+      - name: title_key
+        description: "`movie-<tmdb id>` or `series-<tmdb id>`."
+        data_tests: [unique, not_null]
+      - name: media_type
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [movie, series]
+
+  - name: fct_plays
+    description: One row per Jellyfin playback session, attributed to a title in dim_titles.
+    columns:
+      - name: play_id
+        data_tests: [unique, not_null]
+      - name: title_key
+        description: Null when the played item has no TMDB id, or is gone from Jellyfin.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_titles')
+                field: title_key
+              config: {severity: warn}
+
+  - name: fct_requests
+    description: One row per trakt request, with time to land in the library and time to first watch.
+    columns:
+      - name: request_id
+        data_tests: [unique, not_null]
+      - name: request_status
+        data_tests: [not_null]
+
+  - name: title_usage
+    description: Each title's plays and watch time against its size on disk.
+    columns:
+      - name: title_key
+        data_tests: [unique, not_null]
+
+unit_tests:
+  - name: title_usage_counts_viewers_and_storage_per_hour
+    description: Aggregates a title's plays and divides its size by the hours watched; an unwatched title gets nulls.
+    model: title_usage
+    given:
+      - input: ref('dim_titles')
+        rows:
+          - {title_key: movie-1, title: Watched, media_type: movie, size_on_disk_gb: 30.0}
+          - {title_key: movie-2, title: Unwatched, media_type: movie, size_on_disk_gb: 10.0}
+      - input: ref('fct_plays')
+        rows:
+          - {title_key: movie-1, user_name: alex, watched_minutes: 90, played_at: "2026-10-01 20:00:00"}
+          - {title_key: movie-1, user_name: sam, watched_minutes: 90, played_at: "2026-10-02 20:00:00"}
+          - {title_key: null, user_name: sam, watched_minutes: 45, played_at: "2026-10-03 20:00:00"}
+    expect:
+      rows:
+        - {title_key: movie-1, play_count: 2, viewer_count: 2, hours_watched: 3.0, gb_per_hour_watched: 10.0}
+        - {title_key: movie-2, play_count: 0, viewer_count: 0, hours_watched: 0.0, gb_per_hour_watched: null}

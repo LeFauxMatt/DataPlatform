@@ -1,0 +1,56 @@
+version: 2
+
+# Raw tables written by load/media.py (dlt). dlt snake_cases top-level column names; nested objects stay
+# JSON with the API's camelCase keys. _dlt_load_id is the load's Unix time, which freshness checks read.
+
+sources:
+  - name: tvdb
+    schema: raw_tvdb
+    loaded_at_field: "to_timestamp(cast(_dlt_load_id as double))"
+    freshness:
+      warn_after: {count: 26, period: hour}
+    tables:
+      - name: series
+        description: Every series in the TV library, with its on-disk statistics.
+      - name: history
+        description: The TV library's events (grabbed, imported, deleted, …), loaded incrementally by date.
+
+  - name: imdb
+    schema: raw_imdb
+    loaded_at_field: "to_timestamp(cast(_dlt_load_id as double))"
+    freshness:
+      warn_after: {count: 26, period: hour}
+    tables:
+      - name: movie
+        description: Every movie in the movie library.
+      - name: history
+        description: The movie library's events, loaded incrementally by date.
+
+  - name: trakt
+    schema: raw_trakt
+    loaded_at_field: "to_timestamp(cast(_dlt_load_id as double))"
+    freshness:
+      warn_after: {count: 26, period: hour}
+    tables:
+      - name: requests
+        description: Every request made in the request app.
+      - name: users
+        description: The request app's users.
+
+  - name: jellyfin
+    schema: raw_jellyfin
+    loaded_at_field: "to_timestamp(cast(_dlt_load_id as double))"
+    freshness:
+      warn_after: {count: 26, period: hour}
+    tables:
+      - name: items
+        description: Jellyfin's movies, series and episodes, with provider ids.
+
+  - name: jellystat
+    schema: raw_jellystat
+    loaded_at_field: "to_timestamp(cast(_dlt_load_id as double))"
+    freshness:
+      warn_after: {count: 26, period: hour}
+    tables:
+      - name: plays
+        description: One row per Jellyfin playback session, as Jellystat recorded it.

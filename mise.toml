@@ -1,0 +1,26 @@
+# Tasks for local work: `mise run <task>`. CI runs the same commands (.forgejo/workflows).
+# Credentials: `mise run load` reads them from Infisical (project dataplatform, env prod) through the
+# Infisical CLI's login; see README.
+
+[env]
+DUCKDB_PATH = "{{config_root}}/data/media.duckdb"
+DBT_PROFILES_DIR = "{{config_root}}/transform"
+
+[tasks.load]
+description = "Load every app (or the ones named) into data/media.duckdb"
+run = "infisical run --projectId ${INFISICAL_PROJECT_ID:?set INFISICAL_PROJECT_ID} --env prod -- uv run load/media.py"
+
+[tasks.build]
+description = "Seed, run and test every dbt model"
+dir = "transform"
+run = "uv run dbt build"
+
+[tasks.lint]
+description = "Lint the models with sqlfluff"
+run = "uv run sqlfluff lint transform/models"
+
+[tasks.docs]
+description = "Generate and serve dbt docs on port 8080"
+dir = "transform"
+run = "uv run dbt docs generate && uv run dbt docs serve --port 8080"
+

@@ -1,0 +1,9 @@
+# Read from this folder: dbt looks for profiles.yml in the working directory first.
+# DUCKDB_PATH is the file load/media.py writes (mise.toml and CI set it).
+dataplatform:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('DUCKDB_PATH') }}"
+      threads: 4

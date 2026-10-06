@@ -1,0 +1,29 @@
+name: dataplatform
+version: "0.1.0"
+profile: dataplatform
+
+model-paths: [models]
+seed-paths: [seeds]
+test-paths: [tests]
+macro-paths: [macros]
+
+clean-targets: [target, dbt_packages]
+
+# staging: one view per raw table, renamed and typed; nothing joined.
+# intermediate: building blocks shared by marts, not for querying directly.
+# marts: tables for analysis (facts and dimensions).
+models:
+  dataplatform:
+    staging:
+      +materialized: view
+      +schema: staging
+    intermediate:
+      +materialized: view
+      +schema: intermediate
+    marts:
+      +materialized: table
+      +schema: marts
+
+seeds:
+  dataplatform:
+    +schema: seeds

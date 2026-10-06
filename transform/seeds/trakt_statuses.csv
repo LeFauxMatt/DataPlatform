@@ -1,0 +1,13 @@
+status_kind,status_code,status_name
+request,1,pending
+request,2,approved
+request,3,declined
+request,4,failed
+request,5,completed
+media,1,unknown
+media,2,pending
+media,3,processing
+media,4,partially_available
+media,5,available
+media,6,blocklisted
+media,7,deleted

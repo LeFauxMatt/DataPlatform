@@ -1,0 +1,87 @@
+version: 2
+
+models:
+  - name: stg_tvdb__series
+    columns:
+      - name: series_id
+        data_tests: [unique, not_null]
+      - name: tmdb_id
+        description: Joins series across apps. tvdb leaves it 0 (made null here) when TMDB has no match.
+        data_tests:
+          - not_null:
+              config: {severity: warn}
+
+  - name: stg_tvdb__history
+    columns:
+      - name: event_id
+        data_tests: [unique, not_null]
+      - name: event_type
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [grabbed, seriesFolderImported, downloadFolderImported, downloadFailed, episodeFileDeleted,
+                         episodeFileRenamed, downloadIgnored]
+              config: {severity: warn}
+
+  - name: stg_imdb__movies
+    columns:
+      - name: movie_id
+        data_tests: [unique, not_null]
+      - name: tmdb_id
+        data_tests: [not_null]
+
+  - name: stg_imdb__history
+    columns:
+      - name: event_id
+        data_tests: [unique, not_null]
+      - name: event_type
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [grabbed, downloadFolderImported, movieFolderImported, downloadFailed, movieFileDeleted,
+                         movieFileRenamed, downloadIgnored]
+              config: {severity: warn}
+
+  - name: stg_trakt__requests
+    columns:
+      - name: request_id
+        data_tests: [unique, not_null]
+      - name: media_type
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [movie, series]
+      - name: request_status_code
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('trakt_statuses')
+                field: status_code
+      - name: requested_by_user_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_trakt__users')
+                field: user_id
+
+  - name: stg_trakt__users
+    columns:
+      - name: user_id
+        data_tests: [unique, not_null]
+
+  - name: stg_jellyfin__items
+    columns:
+      - name: item_id
+        data_tests: [unique, not_null]
+      - name: item_type
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [movie, series, episode]
+
+  - name: stg_jellystat__plays
+    columns:
+      - name: play_id
+        data_tests: [unique, not_null]
+      - name: played_at
+        data_tests: [not_null]
