@@ -15,10 +15,6 @@ on:
     - cron: "0 5 * * *"
   workflow_dispatch:
 
-env:
-  DUCKDB_PATH: ${{ github.workspace }}/data/media.duckdb
-  DBT_PROFILES_DIR: ${{ github.workspace }}/transform
-
 jobs:
   build:
     runs-on: docker
@@ -26,6 +22,12 @@ jobs:
       - uses: https://data.forgejo.org/actions/checkout@v4
       - uses: https://github.com/astral-sh/setup-uv@v6
       - run: uv sync --frozen
+
+      # Set here, not in a top-level env: Forgejo leaves ${{ github.workspace }} empty there.
+      - name: Paths
+        run: |
+          echo "DUCKDB_PATH=$PWD/data/media.duckdb" >> "$GITHUB_ENV"
+          echo "DBT_PROFILES_DIR=$PWD/transform" >> "$GITHUB_ENV"
 
       - name: Credentials from Infisical
         run: ci/infisical-env.sh
