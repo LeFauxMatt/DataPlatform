@@ -13,9 +13,9 @@ lifecycle as (
         min(p.played_at) as first_played_at
     from requests as r
     left join {{ ref('int_library_imports') }} as i
-        on r.title_key = i.title_key and i.imported_at >= r.requested_at
+        on r.title_key = i.title_key and r.requested_at <= i.imported_at
     left join {{ ref('fct_plays') }} as p
-        on r.title_key = p.title_key and p.played_at >= r.requested_at
+        on r.title_key = p.title_key and r.requested_at <= p.played_at
     group by r.request_id
 )
 
@@ -36,6 +36,6 @@ from requests as r
 inner join lifecycle as l on r.request_id = l.request_id
 left join {{ ref('stg_trakt__users') }} as u on r.requested_by_user_id = u.user_id
 left join {{ ref('trakt_statuses') }} as rs
-    on rs.status_kind = 'request' and r.request_status_code = rs.status_code
+    on r.request_status_code = rs.status_code and rs.status_kind = 'request'
 left join {{ ref('trakt_statuses') }} as ms
-    on ms.status_kind = 'media' and r.media_status_code = ms.status_code
+    on r.media_status_code = ms.status_code and ms.status_kind = 'media'

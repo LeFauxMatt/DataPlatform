@@ -19,6 +19,8 @@ tvdb as (
     where h.event_type in ('downloadFolderImported', 'seriesFolderImported')
 )
 
-select * from imdb where title_key is not null
+select * from imdb
+where title_key is not null
 union all
-select * from tvdb where title_key is not null
+select * from tvdb
+where title_key is not null

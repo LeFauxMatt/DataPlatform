@@ -1,4 +1,5 @@
--- How much each title is watched against the disk it takes, from its watch history. gb_per_hour_watched is null for a title nobody has watched.
+-- How much each title is watched against the disk it takes, from its watch history.
+-- gb_per_hour_watched is null for a title nobody has watched.
 with plays as (
     select
         title_key,

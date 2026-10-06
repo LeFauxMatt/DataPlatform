@@ -23,7 +23,15 @@ series as (
         episode_file_count > 0 as is_downloaded,
         size_on_disk_bytes
     from {{ ref('stg_tvdb__series') }}
+),
+
+unioned as (
+    select * from movies
+    union all
+    select * from series
 )
 
-select {{ title_key('media_type', 'tmdb_id') }} as title_key, *
-from (select * from movies union all select * from series)
+select
+    {{ title_key('media_type', 'tmdb_id') }} as title_key,
+    *
+from unioned
