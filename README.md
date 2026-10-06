@@ -66,3 +66,7 @@ Infisical project `dataplatform`, environment `prod`, path `/`:
 | `JELLYSTAT_URL`, `JELLYSTAT_API_KEY` | Jellystat → Settings → API Keys |
 
 URLs have no trailing slash, e.g. `https://tvdb.example.ts.net`. No data ever goes in git.
+
+## License
+
+MIT, see [LICENSE](LICENSE).
