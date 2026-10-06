@@ -127,22 +127,35 @@ def jellyfin():
 
 # Jellystat: Jellyfin's playback history. /api/getHistory groups plays by (item, episode, user) and nests
 # each group's individual plays under `results`; this yields the plays themselves, one row each.
+# A movie's group comes back with `results: null` and only its latest play (Jellystat groups on
+# COALESCE(EpisodeId, '1') but joins back on the raw, null EpisodeId), so movies' plays come from
+# /api/getItemHistory instead: every play of one item, all users, unnested.
 
 
 def jellystat():
     api = client("jellystat", APIKeyAuth(name="x-api-token", api_key=env("jellystat", "API_KEY")))
 
-    @dlt.resource(name="plays", primary_key="Id", write_disposition="merge", max_table_nesting=0)
-    def plays():
-        groups = api.paginate(
-            "/api/getHistory",
+    def pages(path: str, **kwargs):
+        return api.paginate(
+            path,
             params={"size": 500},
             paginator=PageNumberPaginator(base_page=1, page_param="page", total_path="pages"),
             data_selector="results",
+            **kwargs,
         )
-        for page in groups:
+
+    @dlt.resource(name="plays", primary_key="Id", write_disposition="merge", max_table_nesting=0)
+    def plays():
+        ungrouped = set()
+        for page in pages("/api/getHistory"):
             for group in page:
-                yield from group["results"]
+                if group.get("results") is None:
+                    ungrouped.add(group["NowPlayingItemId"])
+                else:
+                    yield from group["results"]
+        for item_id in sorted(ungrouped):
+            for page in pages("/api/getItemHistory", method="POST", json={"itemid": item_id}):
+                yield from page
 
     return [plays]
 
