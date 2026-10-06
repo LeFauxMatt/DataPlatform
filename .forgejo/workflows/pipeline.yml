@@ -46,7 +46,12 @@ jobs:
 
       - name: Build and test (dbt)
         working-directory: transform
-        run: uv run dbt build
+        run: uv run dbt build --store-failures
+
+      # --store-failures keeps each failing test's rows in the dbt_test__audit schema; show a few of each.
+      - name: Failing test rows
+        if: failure()
+        run: uv run python ci/show-failures.py
 
       - name: Lint SQL (sqlfluff)
         run: uv run sqlfluff lint transform/models
